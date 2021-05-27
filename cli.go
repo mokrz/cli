@@ -23,8 +23,6 @@ func NewCommand(name string, handler HandleFn) *Command {
 		Handler:  handler,
 		Flags:    flag.NewFlagSet(name, flag.ExitOnError),
 		children: make(map[string]*Command),
-		stdout:   os.Stdout,
-		stderr:   os.Stderr,
 	}
 }
 
@@ -33,7 +31,7 @@ func (c *Command) AddCommand(cmd *Command) {
 	c.children[cmd.Name].parent = c
 }
 
-func (c *Command) GetSubcommand(name string) *Command {
+func (c *Command) Subcommand(name string) *Command {
 	return c.children[name]
 }
 
@@ -41,7 +39,7 @@ func (c *Command) Execute(args []string) error {
 
 	if len(args) > 1 {
 
-		if subCmd := c.GetSubcommand(args[1]); subCmd != nil {
+		if subCmd := c.Subcommand(args[1]); subCmd != nil {
 			return subCmd.Execute(args[1:])
 		}
 	}
@@ -65,7 +63,7 @@ func (c *Command) Stdout() io.Writer {
 		return c.parent.Stdout()
 	}
 
-	return nil
+	return os.Stdout
 }
 
 func (c *Command) Stderr() io.Writer {
@@ -76,5 +74,5 @@ func (c *Command) Stderr() io.Writer {
 		return c.parent.Stderr()
 	}
 
-	return nil
+	return os.Stderr
 }
